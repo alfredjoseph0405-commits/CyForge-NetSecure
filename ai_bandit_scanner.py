@@ -3,22 +3,26 @@ import json
 import os
 from datetime import datetime
 from openai import OpenAI
+import customtkinter as ctk
+from tkinter import filedialog
+
+
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
 
 def clone_repo(repo_url):
 
     folder = repo_url.split("/")[-1].replace(".git","")
 
     if not os.path.exists(folder):
-
-        print("\nCloning repository...\n")
+        log_box.insert("end","\nCloning repository...\n")
         subprocess.run(["git","clone",repo_url])
 
     return folder
 
-
 def run_bandit_scan(target):
 
-    print("\nRunning Bandit security scan...\n")
+    log_box.insert("end","\nRunning Bandit scan...\n")
 
     result = subprocess.run(
         ["python","-m","bandit","-r",target,"-f","json"],
@@ -28,115 +32,130 @@ def run_bandit_scan(target):
 
     if result.returncode not in [0,1]:
 
-        print("Bandit execution failed")
-        print(result.stderr)
+        log_box.insert("end","Bandit failed\n")
+        log_box.insert("end",result.stderr)
         return []
 
     data = json.loads(result.stdout)
     return data.get("results",[])
 
+def ai_analyze(issue,client):
 
-def ai_analyze(issue, client):
-
-    prompt = f"""
+    prompt=f"""
 You are a cybersecurity expert.
-
-Analyze this vulnerability found in Python code.
 
 Issue: {issue['issue_text']}
 Severity: {issue['issue_severity']}
 File: {issue['filename']}
 Line: {issue['line_number']}
 
-Explain:
-1. What the vulnerability is
-2. How attackers exploit it
-3. Provide a secure code fix
+Explain vulnerability and give secure fix.
 """
 
     response = client.chat.completions.create(
         model="gpt-4.1-mini",
-        messages=[
-            {"role":"user","content":prompt}
-        ]
+        messages=[{"role":"user","content":prompt}]
     )
 
     return response.choices[0].message.content
 
-
 def generate_report(results):
 
-    report = {
-        "scan_time": str(datetime.now()),
-        "total_issues": len(results),
-        "issues": results
+    report={
+        "scan_time":str(datetime.now()),
+        "total_issues":len(results),
+        "issues":results
     }
 
     with open("security_report.json","w") as f:
         json.dump(report,f,indent=4)
 
-    print("\nReport saved to security_report.json\n")
+    log_box.insert("end","\nReport saved: security_report.json\n")
 
 
-def main():
+def browse():
 
-    print("\nAI Powered Security Scanner\n")
+    folder=filedialog.askdirectory()
+    folder_entry.delete(0,"end")
+    folder_entry.insert(0,folder)
 
-    # Ask user for API key
-    api_key = input("Enter your OpenAI API Key: ")
+def start_scan():
 
-    client = OpenAI(api_key=api_key)
+    api_key=api_entry.get()
 
-    print("\n1. Scan local folder")
-    print("2. Scan GitHub repository")
-
-    choice = input("\nSelect option: ")
-
-    if choice == "2":
-
-        repo = input("Enter GitHub repo URL: ")
-        target = clone_repo(repo)
-
-    else:
-
-        target = input("Enter folder path: ")
-
-
-    issues = run_bandit_scan(target)
-
-    if not issues:
-
-        print("\nNo vulnerabilities found.\n")
+    if api_key=="":
+        log_box.insert("end","Enter API key\n")
         return
 
+    client=OpenAI(api_key=api_key)
 
-    enriched_results = []
+    folder=folder_entry.get()
+    repo=repo_entry.get()
+
+    if repo!="":
+        folder=clone_repo(repo)
+
+    issues=run_bandit_scan(folder)
+
+    if not issues:
+        log_box.insert("end","\nNo vulnerabilities found\n")
+        return
+
+    enriched=[]
 
     for issue in issues:
 
-        print("\n==============================")
-        print("Bandit Finding")
-        print("==============================")
+        log_box.insert("end","\n====================\n")
 
-        print("Issue:",issue["issue_text"])
-        print("Severity:",issue["issue_severity"])
-        print("File:",issue["filename"])
-        print("Line:",issue["line_number"])
+        log_box.insert("end",f"Issue: {issue['issue_text']}\n")
+        log_box.insert("end",f"Severity: {issue['issue_severity']}\n")
+        log_box.insert("end",f"File: {issue['filename']}\n")
+        log_box.insert("end",f"Line: {issue['line_number']}\n")
 
-        print("\nRunning AI security analysis...\n")
+        log_box.insert("end","\nAI Analysis...\n")
 
         try:
-            ai_result = ai_analyze(issue, client)
+            ai_result=ai_analyze(issue,client)
         except Exception as e:
-            ai_result = "AI analysis failed: " + str(e)
+            ai_result=str(e)
 
-        issue["ai_analysis"] = ai_result
-        enriched_results.append(issue)
+        issue["ai_analysis"]=ai_result
+        enriched.append(issue)
 
-        print(ai_result)
+        log_box.insert("end",ai_result+"\n")
 
-    generate_report(enriched_results)
+    generate_report(enriched)
+
+app=ctk.CTk()
+app.title("AI Security Scanner")
+app.geometry("900x650")
 
 
-if __name__ == "__main__":
-    main()
+title=ctk.CTkLabel(app,text="AI Powered Security Scanner",font=("Arial",28))
+title.pack(pady=20)
+
+
+api_entry=ctk.CTkEntry(app,width=500,placeholder_text="Enter OpenAI API Key")
+api_entry.pack(pady=10)
+
+
+folder_entry=ctk.CTkEntry(app,width=500,placeholder_text="Local Folder Path")
+folder_entry.pack(pady=10)
+
+browse_btn=ctk.CTkButton(app,text="Browse Folder",command=browse)
+browse_btn.pack(pady=5)
+
+
+repo_entry=ctk.CTkEntry(app,width=500,placeholder_text="GitHub Repository URL (optional)")
+repo_entry.pack(pady=10)
+
+
+scan_btn=ctk.CTkButton(app,text="Start Security Scan",command=start_scan)
+scan_btn.pack(pady=20)
+
+
+log_box=ctk.CTkTextbox(app,width=800,height=300)
+log_box.pack(pady=20)
+
+
+app.mainloop()
