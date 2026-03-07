@@ -2,13 +2,7 @@ import subprocess
 import json
 import os
 from datetime import datetime
-
 from openai import OpenAI
-
-
-OPENAI_API_KEY = "YOUR_OPENAI_API_KEY"
-
-client = OpenAI(api_key=OPENAI_API_KEY)
 
 def clone_repo(repo_url):
 
@@ -17,10 +11,10 @@ def clone_repo(repo_url):
     if not os.path.exists(folder):
 
         print("\nCloning repository...\n")
-
         subprocess.run(["git","clone",repo_url])
 
     return folder
+
 
 def run_bandit_scan(target):
 
@@ -36,15 +30,13 @@ def run_bandit_scan(target):
 
         print("Bandit execution failed")
         print(result.stderr)
-
         return []
 
     data = json.loads(result.stdout)
-
     return data.get("results",[])
 
 
-def ai_analyze(issue):
+def ai_analyze(issue, client):
 
     prompt = f"""
 You are a cybersecurity expert.
@@ -75,16 +67,12 @@ Explain:
 def generate_report(results):
 
     report = {
-
         "scan_time": str(datetime.now()),
-
         "total_issues": len(results),
-
         "issues": results
     }
 
     with open("security_report.json","w") as f:
-
         json.dump(report,f,indent=4)
 
     print("\nReport saved to security_report.json\n")
@@ -94,7 +82,12 @@ def main():
 
     print("\nAI Powered Security Scanner\n")
 
-    print("1. Scan local folder")
+    # Ask user for API key
+    api_key = input("Enter your OpenAI API Key: ")
+
+    client = OpenAI(api_key=api_key)
+
+    print("\n1. Scan local folder")
     print("2. Scan GitHub repository")
 
     choice = input("\nSelect option: ")
@@ -102,7 +95,6 @@ def main():
     if choice == "2":
 
         repo = input("Enter GitHub repo URL: ")
-
         target = clone_repo(repo)
 
     else:
@@ -115,12 +107,10 @@ def main():
     if not issues:
 
         print("\nNo vulnerabilities found.\n")
-
         return
 
 
     enriched_results = []
-
 
     for issue in issues:
 
@@ -133,30 +123,20 @@ def main():
         print("File:",issue["filename"])
         print("Line:",issue["line_number"])
 
-
         print("\nRunning AI security analysis...\n")
 
         try:
-
-            ai_result = ai_analyze(issue)
-
+            ai_result = ai_analyze(issue, client)
         except Exception as e:
-
-            ai_result = "AI analysis failed: "+str(e)
-
+            ai_result = "AI analysis failed: " + str(e)
 
         issue["ai_analysis"] = ai_result
-
         enriched_results.append(issue)
 
-
         print(ai_result)
-
 
     generate_report(enriched_results)
 
 
-
 if __name__ == "__main__":
-
     main()
