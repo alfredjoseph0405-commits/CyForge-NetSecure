@@ -7,11 +7,8 @@ import tkinter as tk
 from tkinter import scrolledtext
 import threading
 from tkinter import messagebox
-ky=keyring.get_password("nmapcmdgen","AI_API")
-if not ky:
-    ky=input("Enter the API key after setting it up on Google AI Studio:  ").strip()
-    keyring.set_password("nmapcmdgen","AI_API",ky)
-client=genai.Client(api_key=ky)
+from tkinter import simpledialog
+
 
 def permission(cm):
     res=None
@@ -195,12 +192,17 @@ def descbtn():
         t=threading.Thread(target=command_descriptor, args=(st,), daemon=True)
         t.start()
 mn=tk.Tk()
-
-try:
-    mn.state('zoomed')
-except tk.TclError:
-    mn.attributes('-zoomed', True)
-
+mn.withdraw()
+ky=keyring.get_password("nmapcmdgen","AI_API")
+while not ky:
+    ky=simpledialog.askstring("GET API KEY","Enter the API key after setting it up on Google AI Studio(*Required):  ")
+    if not ky:
+        continue
+    keyring.set_password("nmapcmdgen","AI_API",ky)
+client=genai.Client(api_key=ky)
+mn.deiconify()
+mn.update_idletasks()
+mn.geometry(f"{mn.winfo_screenwidth()}x{mn.winfo_screenheight()}+0+0")
 
 ma=tk.Label(mn, text="Nmap Command Generator and Descriptor", font=("Arial", 30)).pack()
 lft=tk.Frame(mn)
