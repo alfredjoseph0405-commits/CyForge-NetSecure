@@ -8,7 +8,12 @@ from tkinter import scrolledtext
 import threading
 from tkinter import messagebox
 from tkinter import simpledialog
-
+from tkinter import ttk
+import os
+from datetime import datetime
+from openai import OpenAI
+import customtkinter as ctk
+from tkinter import filedialog
 
 def permission(cm):
     res=None
@@ -191,8 +196,154 @@ def descbtn():
         dsclet.insert(tk.END, "[*] Generating description for command:  "+st+"\n")
         t=threading.Thread(target=command_descriptor, args=(st,), daemon=True)
         t.start()
-mn=tk.Tk()
-mn.withdraw()
+
+        
+def clone_repo(repo_url):
+
+    folder = repo_url.split("/")[-1].replace(".git","")
+
+    if not os.path.exists(folder):
+        log_box.insert("end","\nCloning repository...\n")
+        subprocess.run(["git","clone",repo_url])
+
+    return folder
+
+def run_bandit_scan(target):
+
+    log_box.insert("end","\nRunning Bandit scan...\n")
+
+    result = subprocess.run(
+        ["python","-m","bandit","-r",target,"-f","json"],
+        capture_output=True,
+        text=True
+    )
+
+    if result.returncode not in [0,1]:
+
+        log_box.insert("end","Bandit failed\n")
+        log_box.insert("end",result.stderr)
+        return []
+
+    data = json.loads(result.stdout)
+    return data.get("results",[])
+
+def ai_analyze(issue,client):
+
+    prompt=f"""
+You are a cybersecurity expert.
+
+Issue: {issue['issue_text']}
+Severity: {issue['issue_severity']}
+File: {issue['filename']}
+Line: {issue['line_number']}
+
+Explain vulnerability and give secure fix.
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[{"role":"user","content":prompt}]
+    )
+
+    return response.choices[0].message.content
+
+def generate_report(results):
+
+    report={
+        "scan_time":str(datetime.now()),
+        "total_issues":len(results),
+        "issues":results
+    }
+
+    with open("security_report.json","w") as f:
+        json.dump(report,f,indent=4)
+
+    log_box.insert("end","\nReport saved: security_report.json\n")
+
+
+def browse():
+
+    folder=filedialog.askdirectory()
+    folder_entry.delete(0,"end")
+    folder_entry.insert(0,folder)
+
+def start_scan():
+
+    api_key=api_entry.get()
+
+    if api_key=="":
+        log_box.insert("end","Enter API key\n")
+        return
+
+    client=OpenAI(api_key=api_key)
+
+    folder=folder_entry.get()
+    repo=repo_entry.get()
+
+    if repo!="":
+        folder=clone_repo(repo)
+
+    issues=run_bandit_scan(folder)
+
+    if not issues:
+        log_box.insert("end","\nNo vulnerabilities found\n")
+        return
+
+    enriched=[]
+
+    for issue in issues:
+
+        log_box.insert("end","\n====================\n")
+
+        log_box.insert("end",f"Issue: {issue['issue_text']}\n")
+        log_box.insert("end",f"Severity: {issue['issue_severity']}\n")
+        log_box.insert("end",f"File: {issue['filename']}\n")
+        log_box.insert("end",f"Line: {issue['line_number']}\n")
+
+        log_box.insert("end","\nAI Analysis...\n")
+
+        try:
+            ai_result=ai_analyze(issue,client)
+        except Exception as e:
+            ai_result=str(e)
+
+        issue["ai_analysis"]=ai_result
+        enriched.append(issue)
+
+        log_box.insert("end",ai_result+"\n")
+
+    generate_report(enriched)
+
+
+
+
+
+root=tk.Tk()
+style = ttk.Style()
+style.theme_use("clam")
+
+bg = "#1e1e1e"
+fg = "#e0e0e0"
+accent = "#3a86ff"
+
+style.configure(".", background=bg, foreground=fg)
+style.configure("TFrame", background=bg)
+style.configure("TLabel", background=bg, foreground=fg)
+style.configure("TButton", background="#2d2d2d", foreground=fg)
+style.configure("TEntry",background="#2a2a2a",foreground="white",insertbackground="white")
+style.map("TButton",
+          background=[("active", accent)])
+root.configure(bg=bg)
+style.configure("TNotebook.Tab",
+                background="#2d2d2d",
+                foreground="#e0e0e0",
+                padding=[10, 5])
+
+style.map("TNotebook.Tab",
+          background=[("selected", "#3a86ff")],
+          foreground=[("selected", "#ffffff")])
+root.title("CMDFRG")
+root.withdraw()
 ky=keyring.get_password("nmapcmdgen","AI_API")
 while not ky:
     ky=simpledialog.askstring("GET API KEY","Enter the API key after setting it up on Google AI Studio(*Required):  ")
@@ -200,31 +351,72 @@ while not ky:
         continue
     keyring.set_password("nmapcmdgen","AI_API",ky)
 client=genai.Client(api_key=ky)
-mn.deiconify()
-mn.update_idletasks()
-mn.geometry(f"{mn.winfo_screenwidth()}x{mn.winfo_screenheight()}+0+0")
+root.deiconify()
+root.update_idletasks()
+root.geometry(f"{root.winfo_screenwidth()}x{root.winfo_screenheight()-80}+0+0")
 
-ma=tk.Label(mn, text="Nmap Command Generator and Descriptor", font=("Arial", 30)).pack()
-lft=tk.Frame(mn)
+
+ntb=ttk.Notebook(root)
+ntb.pack(fill=tk.BOTH, expand=True)
+mn=ttk.Frame(ntb)
+ntb.add(mn,text="NMAP Tool")
+ma=ttk.Label(mn, text="Nmap Command Generator and Descriptor", font=("Arial", 30)).pack()
+lft=ttk.Frame(mn)
 lft.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-rgt=tk.Frame(mn)
-lb1=tk.Label(lft, text="Nmap Command Generator", font=("Arial", 25))
+rgt=ttk.Frame(mn)
+lb1=ttk.Label(lft, text="Nmap Command Generator", font=("Arial", 25))
 lb1.pack(fill=tk.X)
-lb2=tk.Label(rgt, text="Nmap Command Descriptor", font=("Arial", 25))
+lb2=ttk.Label(rgt, text="Nmap Command Descriptor", font=("Arial", 25))
 lb2.pack(fill=tk.X)
 rgt.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
-cmlet=scrolledtext.ScrolledText(lft, wrap=tk.WORD)
+cmlet=scrolledtext.ScrolledText(lft, wrap=tk.WORD,bg="#121212",fg="#00ff9c",insertbackground="white")
 cmlet.pack(fill=tk.BOTH, expand=True)
-cmlab=tk.Label(rgt, text="Nmap Command:", font=("Arial", 12))
+cmlab=ttk.Label(rgt, text="Nmap Command:", font=("Arial", 12))
 cmlab.pack(fill=tk.X)
-dsclet=scrolledtext.ScrolledText(rgt, wrap=tk.WORD)
+dsclet=scrolledtext.ScrolledText(rgt, wrap=tk.WORD,bg="#121212",fg="#00ff9c",insertbackground="white")
 dsclet.pack(fill=tk.BOTH, expand=True)
-prompt=tk.Entry(lft, font=("Arial",18))
+clab=ttk.Label(lft,font=("Arial",14), text="Enter Prompt or Command here:")
+clab.pack(fill=tk.X)
+prompt=ttk.Entry(lft, font=("Arial",18))
 prompt.pack(fill=tk.X)
-btfr=tk.Frame(lft)
-btfr.pack()
-gencmbt=tk.Button(btfr, text="Generate Command", command=genbtn, height=4)
-gendcsbt=tk.Button(btfr, text="Describe Command", command=descbtn, height=4)
+btfr=ttk.Frame(lft)
+btfr.pack(fill=tk.X)
+gencmbt=ttk.Button(btfr, text="Generate Command", command=genbtn)
+gendcsbt=ttk.Button(btfr, text="Describe Command", command=descbtn)
 gencmbt.pack(side=tk.LEFT, fill=tk.X, expand=True)
 gendcsbt.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
+
+app=ctk.CTkFrame(ntb)
+ntb.add(app,text="Bandit")
+
+title=ctk.CTkLabel(app,text="AI Powered Security Scanner",font=("Arial",28))
+title.pack(pady=20)
+
+
+api_entry=ctk.CTkEntry(app,width=500,placeholder_text="Enter OpenAI API Key")
+api_entry.pack(pady=10)
+
+
+folder_entry=ctk.CTkEntry(app,width=500,placeholder_text="Local Folder Path")
+folder_entry.pack(pady=10)
+
+browse_btn=ctk.CTkButton(app,text="Browse Folder",command=browse)
+browse_btn.pack(pady=5)
+
+
+repo_entry=ctk.CTkEntry(app,width=500,placeholder_text="GitHub Repository URL (optional)")
+repo_entry.pack(pady=10)
+
+
+scan_btn=ctk.CTkButton(app,text="Start Security Scan",command=start_scan)
+scan_btn.pack(pady=20)
+
+
+log_box=ctk.CTkTextbox(app,width=800,height=300)
+log_box.pack(pady=20)
+
 tk.mainloop()
