@@ -80,8 +80,8 @@ User request:
         dat = json.loads(res.text.strip())
         return dat
     except json.JSONDecodeError:
-        print("!!AI returned invalid JSON.")
-        print(res)
+        messagebox.showerror("Error!!","!!AI returned invalid JSON.")
+        cmlet.insert(tk.END,"Error Json: \n"+res+"\n\n")
         return None
 
 
@@ -89,8 +89,8 @@ def cmgenerator(pm):
     dat=gencmd(pm)
     aldat=None
     if dat and not dat["isvalid"]:
-        print("!!A Valid command could not be generated...... check prompt for necessary details and try again.")
-        print("!!Error Description: ",dat['desc']) if dat and dat['desc'] else print("Error description not available for bad JSON response")
+        messagebox.showerror("ERROR!!","!!A Valid command could not be generated...... check prompt for necessary details and try again.\n\n")
+        cmlet.insert(tk.END,"!!Error Description: "+dat['desc']+"\n\n") if dat and dat['desc'] else cmlet.insert(tk.END,"Error description not available for bad JSON response\n\n")
         mn.after(0, lambda : gencmbt.config(state=tk.NORMAL))
         return
     if dat==None:
@@ -330,7 +330,7 @@ style.configure(".", background=bg, foreground=fg)
 style.configure("TFrame", background=bg)
 style.configure("TLabel", background=bg, foreground=fg)
 style.configure("TButton", background="#2d2d2d", foreground=fg)
-style.configure("TEntry",background="#2a2a2a",foreground="white",insertbackground="white")
+style.configure("TEntry",fieldbackground="#2a2a2a",foreground="cyan",insertbackground="white")
 style.map("TButton",
           background=[("active", accent)])
 root.configure(bg=bg)
@@ -359,11 +359,14 @@ root.geometry(f"{root.winfo_screenwidth()}x{root.winfo_screenheight()-80}+0+0")
 ntb=ttk.Notebook(root)
 ntb.pack(fill=tk.BOTH, expand=True)
 mn=ttk.Frame(ntb)
-ntb.add(mn,text="NMAP Tool")
 ma=ttk.Label(mn, text="Nmap Command Generator and Descriptor", font=("Arial", 30)).pack()
-lft=ttk.Frame(mn)
+mfr=ttk.Frame(mn)
+mfr.pack(fill=tk.BOTH, expand=True)
+ntb.add(mn,text="NMAP Tool")
+
+lft=ttk.Frame(mfr)
 lft.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-rgt=ttk.Frame(mn)
+rgt=ttk.Frame(mfr)
 lb1=ttk.Label(lft, text="Nmap Command Generator", font=("Arial", 25))
 lb1.pack(fill=tk.X)
 lb2=ttk.Label(rgt, text="Nmap Command Descriptor", font=("Arial", 25))
@@ -375,12 +378,14 @@ cmlab=ttk.Label(rgt, text="Nmap Command:", font=("Arial", 12))
 cmlab.pack(fill=tk.X)
 dsclet=scrolledtext.ScrolledText(rgt, wrap=tk.WORD,bg="#121212",fg="#00ff9c",insertbackground="white")
 dsclet.pack(fill=tk.BOTH, expand=True)
-clab=ttk.Label(lft,font=("Arial",14), text="Enter Prompt or Command here:")
+
+
+btfr=ttk.Frame(mn)
+btfr.pack(side=tk.BOTTOM, fill=tk.BOTH)
+clab=ttk.Label(btfr,font=("Arial",14), text="Enter Prompt or Command here:")
 clab.pack(fill=tk.X)
-prompt=ttk.Entry(lft, font=("Arial",18))
+prompt=ttk.Entry(btfr, font=("Arial",18))
 prompt.pack(fill=tk.X)
-btfr=ttk.Frame(lft)
-btfr.pack(fill=tk.X)
 gencmbt=ttk.Button(btfr, text="Generate Command", command=genbtn)
 gendcsbt=ttk.Button(btfr, text="Describe Command", command=descbtn)
 gencmbt.pack(side=tk.LEFT, fill=tk.X, expand=True)
