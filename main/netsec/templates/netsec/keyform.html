@@ -1,0 +1,9 @@
+{% extends 'netsec/basestyle.html' %}
+{% block title %}KEY GEN{% endblock %}
+{% block content %}
+<form method="POST" action="{% url 'key_set' %}">
+    {% csrf_token %}
+    {{ form.as_p }} 
+    <button type="submit">Add Key</button>
+</form>
+{% endblock %}

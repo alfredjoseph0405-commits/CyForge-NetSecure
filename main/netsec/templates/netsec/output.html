@@ -1,0 +1,16 @@
+{% extends 'netsec/basestyle.html' %}
+{% csrf_token %}
+{% block content %}
+<h1>{{ tool }} Output: </h1>
+<table style="width: 100%; border: 2px solid black">
+    <tr>
+        <th>Parsed Output:</th>
+        <th>AI Analysis:</th>
+    </tr>
+    <tr>
+        <td><pre style="white-space: pre-wrap; max-width: 100%; overflow-x: hidden;">{{ out }}</pre></td>
+        <td><pre style="white-space: pre-wrap; max-width: 100%; overflow-x: hidden;">{{ ai }}</pre></td>
+    </tr>
+</table>
+<a href="{% url 'home' %}"><button type=button>Home Page</button></a>
+{% endblock %}
