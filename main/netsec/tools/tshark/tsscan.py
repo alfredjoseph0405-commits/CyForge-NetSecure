@@ -13,7 +13,7 @@ def genmock(num_packets=10):
     # Magic number, Version (2.4), Timezone, Sigfigs, Snaplen (65535), Network (Ethernet=1)
     pcap_header = struct.pack("<IHHIIII", 0xa1b2c3d4, 2, 4, 0, 0, 65535, 1)
     fs=FileSystemStorage()
-    fn=fs.save(settings.BASE_DIR/"cap.pcap", ContentFile(b""))
+    fn=fs.save("cap.pcap", ContentFile(b""))
     flpath=fs.path(fn)
     with open(flpath, "wb") as f:
         f.write(pcap_header)
@@ -37,7 +37,7 @@ def genmock(num_packets=10):
             f.write(packet_data)
     res={}
     path = Path("cap.pcap").resolve()
-    psr=subprocess.run(["tshark", "-r", str(path), "-T", "fields" , "-e" , "ip.src", "-e" , "ip.dst", "-e" , "_ws.col.Protocol"], capture_output=True, text=True, check=False)
+    psr=subprocess.run(["tshark", "-r", str(path), "-T", "fields" , "-e" , "ip.src", "-e" , "ip.dst", "-e" , "frame.protocols"], capture_output=True, text=True, check=False)
     out=psr.stdout or "tshark returned no output."
     res["out"]=out.strip()
     res["ai"]=genaianalz(out)
@@ -49,12 +49,12 @@ def genaianalz(cont):
         model="gemini-3.1-flash-lite-preview",
         contents=f"""
 You are a cybersecurity analyst.
-
+I have captured some network traffic after a nmap scan from my attacker docker container to my victime docker container and here is the summary of it.
 Analyze the following network traffic summary and identify:
 - suspicious patterns
 - unusual communication
 - possible vulnerabilities
-
+on the victim system based on the captured data. Provide insights into potential attack vectors and recommend mitigation strategies if any vulnerabilities are identified.
 Data:
 {cont}
 """,
@@ -63,7 +63,7 @@ Data:
 
 def pckcapture():
     fs=FileSystemStorage()
-    fn=fs.save(settings.BASE_DIR/"cap.pcap", ContentFile(b""))
+    fn=fs.save("cap.pcap", ContentFile(b""))
     filepath=fs.path(fn)
     ts = subprocess.Popen(["tshark", "-i", "eth0", "-w", filepath])
     time.sleep(1)

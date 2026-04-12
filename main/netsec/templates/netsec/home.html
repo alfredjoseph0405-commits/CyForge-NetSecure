@@ -1,9 +1,14 @@
 {% extends 'netsec/basestyle.html' %}
 {% block content %}
+<br><br><br>
 <a href="{% url 'nmap_view' %}">
     <button type="button">System Version Scan [NMAP]</button>
 </a>
+<br><br>
 <a href="{% url 'tsmenrend' %}">
     <button type="button">Network Packet Analysis [Tshark]</button>
+</a><br><br>
+<a href="{% url 'get_mode' %}">
+    <button type="button">Python Code analyser [Bandit]</button>
 </a>
 {% endblock %}

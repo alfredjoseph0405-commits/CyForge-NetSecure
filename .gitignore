@@ -1,23 +1,29 @@
 # Python bytecode
-**/__pycache__/
-**/*.py[cod]
+__pycache__/
+*.py[cod]
 
 # Virtual environment
 venv/
 
-# Django abnd db
+# Django / DB / logs
 *.sqlite3
 *.log
 *.pot
 *.swp
 *.swo
 
+# Media files (VERY IMPORTANT)
+media/
+
 # OS files
 .DS_Store
 Thumbs.db
 
 # VS Code
-**/.vscode/
+.vscode/
 
 # Environment files
-**/.env
+main/.env
+
+# Docker noise
+docker-compose.override.yml

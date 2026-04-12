@@ -16,7 +16,7 @@ services:
       - "8000:8000"
 
     volumes:
-      - ./app:/proj   # Django + media shared
+      - ./main:/proj   # Django + media shared
 
     networks:
       - cyberlab

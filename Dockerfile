@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     tcpdump \
     build-essential \
     libpcap-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -21,10 +22,10 @@ WORKDIR /proj
 # RUN pip install -r requirements.txt
 
 # Install Python dependencies
-RUN pip install django python-dotenv google-generativeai bandit
+RUN pip install django python-dotenv google-genai bandit
 
 # Copy project (optional if using volume, but safe fallback)
-COPY ./app /proj
+COPY ./main /proj
 
 # Expose Django port
 EXPOSE 8000
