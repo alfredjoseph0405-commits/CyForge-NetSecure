@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  victim:
+    image: vulnerables/web-dvwa
+    container_name: victim
+    networks:
+      - cyberlab
+
+  attacker:
+    build: .
+    image: attacker:latest
+    container_name: attacker
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./app:/proj   # Django + media shared
+
+    networks:
+      - cyberlab
+
+    stdin_open: true
+    tty: true
+
+    command: >
+      bash -c "
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000
+      "
+
+networks:
+  cyberlab:

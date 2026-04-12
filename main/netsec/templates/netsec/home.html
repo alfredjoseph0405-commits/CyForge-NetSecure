@@ -1,6 +1,9 @@
 {% extends 'netsec/basestyle.html' %}
 {% block content %}
-<a href="{% url 'ipask' %}">
-    <button type="button">PORT SCAN [NMAP]</button>
+<a href="{% url 'nmap_view' %}">
+    <button type="button">System Version Scan [NMAP]</button>
+</a>
+<a href="{% url 'tsmenrend' %}">
+    <button type="button">Network Packet Analysis [Tshark]</button>
 </a>
 {% endblock %}

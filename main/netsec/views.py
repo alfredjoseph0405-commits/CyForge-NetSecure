@@ -1,10 +1,11 @@
 from django.shortcuts import render,redirect
 from dotenv import get_key, load_dotenv, set_key
 from django.conf import settings
-from .forms import keyfrm, ipfrm
+from .forms import keyfrm
 from django.http import HttpResponseNotAllowed
 from threading import Thread
 from .tools.nmap.nscan import run_scan
+from .tools.tshark.tsscan import genmock, pckcapture
 def keygen(request):
     gkey=get_key(str(settings.BASE_DIR/".env"), "genai")
     if gkey==None:
@@ -26,22 +27,30 @@ def key_set(request):
         return HttpResponseNotAllowed(["POST"])
 
 
-def thread_target(ip, container):
-    result = run_scan(ip)
+def thread_target(container):
+    result = run_scan()
     container.update(result)
 
-def view_ipask(request):
-    frm=ipfrm()
-    return render(request, "netsec/nmipfrm.html", {"form":frm})
+def tview(request):
+    return render(request , "netsec/tmodeset.html")
 
 def nmap_view(request):
     if request.method == "POST":
         frm=ipfrm(request.POST)
         if frm.is_valid():
-            ip=frm.cleaned_data["ipaddr"]
             result = {}
-            t = Thread(target=thread_target, args=(ip, result))
+            t = Thread(target=thread_target, args=(result))
             t.start()
             t.join()
             result["tool"]="NMAP"
             return render(request, "netsec/output.html", result)
+
+def tshrk(request):
+    if request.method=="POST":
+        mode=request.POST.get("mode")
+        if mode=="mock":
+            res=genmock()
+            return render(request, "netsec/output.html", res)
+        elif mode=="capt":
+            res=pckcapture()
+            return render(request, "netsec/output.html", res)

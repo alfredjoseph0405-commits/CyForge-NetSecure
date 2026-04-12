@@ -1,8 +1,0 @@
-{% extends 'netsec/basestyle.html' %}
-{% block content %}
-<form method="POST" action="{% url 'nmap_view' %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Run Scan</button>
-</form>
-{% endblock %}

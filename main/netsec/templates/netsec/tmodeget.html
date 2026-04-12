@@ -1,0 +1,8 @@
+{% extends 'netsec/basestyle.html' %}
+{% block content %}
+<form method="POST" action="{% url 'tshrk' %}">
+    {% csrf_token %}
+    <button name="mode" type="submit" value="mock">Run Mock Scan</button>
+    <button name="mode" type="submit" value="capt">Capture Packets</button>
+</form>
+{% endblock %}

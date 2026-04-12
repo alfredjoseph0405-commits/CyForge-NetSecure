@@ -30,11 +30,6 @@ if not SECRET_KEY:
     load_dotenv(envpath, override=True)
     SECRET_KEY=os.getenv("DJANGO_SECRET_KEY")
 
-MONGO_URI = os.getenv("MONGO_URI")
-if not MONGO_URI:
-    set_key(envpath, "MONGO_URI", "mongodb://localhost:27017/")
-    load_dotenv(envpath, override=True)
-    MONGO_URI = os.getenv("MONGO_URI")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
