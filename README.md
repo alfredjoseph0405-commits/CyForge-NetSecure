@@ -158,11 +158,12 @@ Which is dangerously close to something people would call a **“real product”
 
 ---
 
-## 👨‍💻 Author
+## 👨‍💻 Contributors
 
 Alfred Joseph W
-Cyber Security Student
-
+Lekshme Balaje R
+Cynthia Vincy F
+Lakshanyaa R K
 ---
 
 ## 📜 License
