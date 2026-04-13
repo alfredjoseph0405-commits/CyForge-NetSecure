@@ -1,109 +1,171 @@
-🔐 NetSec Toolkit – Django Based Network Security Utility
+# 🔐 CyForge NetSecure – Bandit Scanner Module
 
-A Django-based web application that integrates Nmap scanning and AI-powered security analysis for internal network assessment.
+A Django-based security analysis tool that scans Python code for potential vulnerabilities using **Bandit** and optional **AI-based analysis**.
 
-This project is designed for educational and controlled lab environments.
+Built inside a Dockerized lab environment with an attacker–victim setup.
 
-🚀 Features
+---
 
-✅ API Key Management via .env
+## 🚀 Features
 
-✅ Private IP validation (blocks public & loopback targets)
+* 📁 Upload Python files for scanning
+* 🌐 Scan public GitHub repositories
+* 🧠 AI-based vulnerability explanation (Gemini API)
+* 🔍 Static analysis using Bandit
+* 📂 Secure file handling using Django `MEDIA_ROOT`
+* 🌍 Static frontend hosted via GitHub Pages
+* 🐳 Fully containerized using Docker
 
-✅ Nmap Version Scan (-sV)
+---
 
-✅ AI-based vulnerability analysis using Google GenAI
+## ⚙️ Tech Stack
 
-✅ Clean formatted scan output (no horizontal overflow)
+* Backend: Django 5
+* Security Tool: Bandit
+* AI: Google Gemini (`google-genai`)
+* Frontend (Static): HTML/CSS (GitHub Pages)
+* Containerization: Docker + Docker Compose
+* Language: Python 3.11
 
-✅ Threaded scan execution (non-blocking backend logic)
+---
 
-🧠 Tools Integrated
+## 📁 Project Structure
 
-Nmap – Version scanning for service detection
+```plaintext
+proj/
+│── core/                 # Django core settings
+│── netsec/
+│   ├── views.py
+│   ├── forms.py
+│   ├── urls.py
+│   └── tools/
+│       └── bandit/
+│           └── bscan.py  # Main BanditTool logic
+│
+│── media/                # Uploaded files stored here
+│── docs/                 # Static frontend (GitHub Pages hosting)
+│   ├── Manual.html
+│
+│── manage.py
+│── docker-compose.yaml
+│── Dockerfile
+```
 
-Google GenAI (Gemini) – Security analysis of scan results
+---
 
-Django – Web framework
+## 🌐 Frontend Deployment (GitHub Pages)
 
-python-dotenv – Environment variable handling
+The `docs/` folder contains the static frontend UI.
 
-📂 Project Structure main/ │ ├── netsec/ │ ├── views.py │ ├── services/ │ │ └── nmap_runner.py │ ├── templates/netsec/ │ ├── forms.py │ └── urls.py │ ├── core/ │ └── settings.py │ ├── .env └── manage.py ⚙️ Setup Instructions 1️⃣ Clone the repository git clone cd 2️⃣ Create and activate virtual environment python -m venv venv venv\Scripts\activate # Windows 3️⃣ Install dependencies pip install django python-dotenv google-genai 4️⃣ Install Nmap and MongoDB
+### To deploy:
 
-Download from: https://nmap.org/download.html
+1. Push repository to GitHub
+2. Go to **Repository Settings → Pages**
+3. Set:
 
-Ensure nmap is added to your system PATH.
+   * Source: `main` branch
+   * Folder: `/docs`
 
-Test with:
+Your frontend will be live at:
 
-nmap --version
+```plaintext
+https://<your-username>.github.io/<repo-name>/
+```
 
-Download mongodb and mongosh
+---
 
-5️⃣ Configure API Key
+## 🧪 How It Works
 
-Create an API key from google AI Studion and provide it when Prompted on first Run
+### 1. Frontend (GitHub Pages)
 
-6️⃣ Run the server python manage.py runserver
+* Collects:
 
-Visit:
+  * File upload OR GitHub repo URL
+* Sends request to Django backend (API endpoint)
 
-http://127.0.0.1:8000/ 🔎 How It Works
+---
 
-User submits an IP address.
+### 2. Backend (Django + Docker)
 
-Application validates:
+```plaintext
+User Input → MEDIA_ROOT → BanditTool.execute()
+```
 
-Must be private IP
+* File stored in `/proj/media/`
+* Git repo cloned (inside container)
+* Bandit scan executed
+* AI analysis generated
 
-Must not be loopback
+---
 
-Nmap runs:
+## 🔑 Environment Setup
 
-nmap -sV
+Create a `.env` file in project root:
 
-Raw output is captured via subprocess.
+```plaintext
+genai=YOUR_GEMINI_API_KEY
+```
 
-Output is sent to GenAI model for:
+---
 
-Vulnerability explanation
+## 🐳 Docker Setup
 
-CVE context
+### Build and run:
 
-Risk summary
+```bash
+docker-compose build
+docker-compose up
+```
 
-Results are displayed in formatted table view.
+---
 
-🔐 Security Controls
+## 📂 Media Storage
 
-Public IP scanning blocked
+All uploaded files are stored in:
 
-Loopback scanning blocked
+```plaintext
+/proj/media/
+```
 
-Timeout enforced on Nmap process
+---
 
-Controlled subprocess execution
+## ❗ Known Limitations
 
-No raw HTML rendering from user input
+* ❌ No folder upload (intentionally removed)
+* ❌ Git requires installation inside container
+* ❌ Static frontend requires backend URL configuration (CORS may be needed)
+* ❌ No authentication yet
 
-⚠️ Disclaimer
+---
 
-This tool is intended strictly for:
+## 🛠️ Future Improvements
 
-Educational purposes
+* 📦 ZIP upload + extraction support
+* 🔐 Authentication system
+* 🌐 Full API-based frontend integration
+* 📊 Better visualization of scan results
 
-Local lab environments
+---
 
-Authorized internal testing
+## 🧠 Reality Check
 
-Do NOT use against networks or systems without explicit permission.
+You now have:
 
-🛠 Future Improvements
+* A containerized backend
+* A static hosted frontend
+* A security scanning pipeline
 
-CVE database integration
+Which is dangerously close to something people would call a **“real product”**… so naturally, bugs will multiply accordingly.
 
-Scan history storage (DB)
+---
 
-Multiple scan modes (TCP SYN, UDP, full port scan)
+## 👨‍💻 Author
 
-Wireshark PCAP analysis module
+Alfred Joseph W
+Cyber Security Student
+
+---
+
+## ⚖️ License
+
+For educational use only.
