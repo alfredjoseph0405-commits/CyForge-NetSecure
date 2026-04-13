@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber Lab Dashboard</title>
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  margin: 0;
+}
+header {
+  padding: 20px;
+  text-align: center;
+  background: #1e293b;
+  font-size: 24px;
+  font-weight: bold;
+}
+.container {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+.card {
+  background: #1e293b;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+.card h2 {
+  margin-top: 0;
+}
+button {
+  background: #38bdf8;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #0f172a;
+  font-weight: bold;
+}
+.code {
+  background: #020617;
+  padding: 10px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-top: 10px;
+}
+.status {
+  margin-top: 10px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  display: inline-block;
+}
+.green { background: #16a34a; }
+.yellow { background: #eab308; color:#000; }
+.red { background: #dc2626; }
+</style>
+</head>
+<body>
+<header>🧪 Cyber Lab Dashboard</header><div class="container"><div class="card">
+<h2>🚀 Start Lab</h2>
+<div class="code">docker-compose up -d --build</div>
+<button onclick="copyCode(this)">Copy</button>
+<div class="status green">Ready</div>
+</div><div class="card">
+<h2>🔁 Restart Attacker</h2>
+<div class="code">docker-compose restart attacker</div>
+<button onclick="copyCode(this)">Copy</button>
+<div class="status yellow">Running</div>
+</div><div class="card">
+<h2>🧩 Change Victim</h2>
+<div class="code">image: vulnerables/web-dvws</div>
+<button onclick="copyCode(this)">Copy</button>
+<div class="status red">Manual Step</div>
+</div><div class="card">
+<h2>🧹 Reset Lab</h2>
+<div class="code">docker-compose down</div>
+<button onclick="copyCode(this)">Copy</button>
+</div><div class="card">
+<h2>🌐 Open Dashboard</h2>
+<div class="code">http://localhost:8000</div>
+<button onclick="copyCode(this)">Copy</button>
+</div></div><script>
+function copyCode(btn) {
+  const code = btn.previousElementSibling.innerText;
+  navigator.clipboard.writeText(code);
+  btn.innerText = "Copied!";
+  setTimeout(() => btn.innerText = "Copy", 1500);
+}
+</script>
