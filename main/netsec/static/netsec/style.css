@@ -2,7 +2,7 @@ body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg, #0f172a, #020617);
-    color: #e2e8f0;
+    color: #4AF262;
 }
 .navbar {
     background: #020617;
@@ -67,3 +67,26 @@ body {
 .green { background: #16a34a; }
 .yellow { background: #eab308; color: #000; }
 .red { background: #dc2626; }
+h1, h2, h3, h4, h5, h6 {
+  color: #70d0f9;
+  text-transform: uppercase;
+}
+header, footer {
+  color: #70d0f9;
+  text-transform: uppercase;
+}
+
+pre {
+  background-color: #1a1a1a;
+  color: #00FF00;
+  padding: 15px;
+  border-left: 5px solid #4AF262;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  color: #33FF33;
+}
