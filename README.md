@@ -42,9 +42,8 @@ proj/
 │       └── bandit/
 │           └── bscan.py  # Main BanditTool logic
 │
-│── media/                # Uploaded files stored here
-│── docs/                 # Static frontend (GitHub Pages hosting)
-│   ├── Manual.html
+│── media/                     # Uploaded files stored here
+│── index.html                 # Static frontend (GitHub Pages hosting)
 │
 │── manage.py
 │── docker-compose.yaml
@@ -166,6 +165,8 @@ Cyber Security Student
 
 ---
 
-## ⚖️ License
+## 📜 License
 
-For educational use only.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+© 2026 CyForge Team
