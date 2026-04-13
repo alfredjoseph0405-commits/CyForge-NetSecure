@@ -161,9 +161,13 @@ Which is dangerously close to something people would call a **“real product”
 ## 👨‍💻 Contributors
 
 Alfred Joseph W
+
 Lekshme Balaje R
+
 Cynthia Vincy F
+
 Lakshanyaa R K
+
 ---
 
 ## 📜 License
